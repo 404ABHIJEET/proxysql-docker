@@ -7,13 +7,10 @@ chmod +x replica1/init.sh replica2/init.sh
 docker-compose up -d
 
 # Login into master mysql and run master.sql
-docker exec -it mysql-master mysql -uroot -proot 
-source ./master.sql
-exit;
+docker exec -i mysql-master mysql -uroot -proot < ./master.sql
 
 # Login into admin proxysql and run proxysql.sql
-docker exec -it proxysql mysql -uadmin -padmin -P6032 
-source ./proxysql.sql
+docker exec -it proxysql mysql -uadmin -padmin -P6032 < ./proxysql.sql
 
 # to check if mysql backend is connected with proxysql or not
 SELECT * FROM monitor.mysql_server_ping_log ORDER BY time_start_us DESC LIMIT 6;

@@ -9,7 +9,6 @@ services:
       - "6033:6033"   # MySQL port
     volumes:
       - ./proxysql.cnf:/etc/proxysql.cnf     # Optional custom config
-      - proxysql_data:/var/lib/proxysql
     restart: always
 
   mysql-master:
@@ -20,7 +19,6 @@ services:
       MYSQL_ROOT_PASSWORD: root
     volumes:
       - ./master:/docker-entrypoint-initdb.d
-      - mysql_master_data:/var/lib/mysql
     command:
       --server-id=1
       --gtid-mode=ON
@@ -40,7 +38,6 @@ services:
       - mysql-master
     volumes:
       - ./replica1:/docker-entrypoint-initdb.d
-      - mysql_replica1_data:/var/lib/mysql
     command:
       --server-id=2
       --gtid-mode=ON
@@ -60,7 +57,6 @@ services:
       - mysql-master
     volumes:
       - ./replica2:/docker-entrypoint-initdb.d
-      - mysql_replica2_data:/var/lib/mysql
     command:
       --server-id=3
       --gtid-mode=ON
@@ -70,8 +66,4 @@ services:
       --default-authentication-plugin=mysql_native_password
       --log-slave-updates=ON
   
-  volumes:
-    proxysql_data:
-    mysql_master_data:
-    mysql_replica1_data:
-    mysql_replica2_data:
+
