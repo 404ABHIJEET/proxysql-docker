@@ -5,11 +5,7 @@ docker-compose --version # Check Docker Compose version
 
 chmod +x replica1/init.sh replica2/init.sh
 docker-compose up -d
-
-# Login into master mysql and run master.sql
 docker exec -i mysql-master mysql -uroot -proot < ./master.sql
-
-# Login into admin proxysql and run proxysql.sql
 docker exec -it proxysql mysql -uadmin -padmin -P6032 < ./proxysql.sql
 
 # to check if mysql backend is connected with proxysql or not
