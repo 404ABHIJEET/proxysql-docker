@@ -31,9 +31,10 @@ truncate stats_mysql_query_digest;
 # logins for proxysql and mysql servers
 docker exec -it proxysql mysql -uadmin -padmin -P6032 
 docker exec -it proxysql mysql -uappuser -pappuser -P6033
-docker exec -it mysql-master mysql -uroot -proot 
-docker exec -it mysql-replica1 mysql -uroot -proot 
-docker exec -it mysql-replica2 mysql -uroot -proot
+docker exec -it mariadb-master mysql -uroot -proot 
+docker exec -it mariadb-slave-1 mysql -uroot -proot 
+docker exec -it mariadb-state-ch-master mysql -uroot -proot
+docker exec -it mariadb-state-ch-slave-1 mysql -uroot -proot
 
 Stop All MySQL Containers:
 docker stop proxysql

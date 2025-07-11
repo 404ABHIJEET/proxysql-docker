@@ -8,62 +8,88 @@ services:
       - "6032:6032"   # Admin port
       - "6033:6033"   # MySQL port
     volumes:
-      - ./proxysql.cnf:/etc/proxysql.cnf     # Optional custom config
+      - ./proxysql.cnf:/etc/proxysql.cnf    
+      - ./proxysql-data:/var/lib/proxysql    
     restart: always
 
-  mysql-master:
-    container_name: mysql-master
-    image: mysql:8.0
-    restart: always
+  mariadb-master:
+    image: mariadb:10.6
+    container_name: mariadb-master
     environment:
       MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3311:3306"
     volumes:
       - ./master:/docker-entrypoint-initdb.d
-    command:
+      - ./master-data:/var/lib/mysql
+    command: >
       --server-id=1
-      --gtid-mode=ON
-      --enforce-gtid-consistency=ON
-      --log-bin=mysql-bin
-      --default-authentication-plugin=mysql_native_password
+      --log-bin=mariadb-bin
+      --binlog-format=row
+      --gtid-domain-id=1
       --log-slave-updates=ON
-      # --binlog-do-db=testdb
+      --skip-bind-address
+      --skip-name-resolve
 
-  mysql-replica1:
-    container_name: mysql-replica1
-    image: mysql:8.0
-    restart: always
+  mariadb-slave-1:
+    image: mariadb:10.6
+    container_name: mariadb-slave-1
     environment:
       MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3312:3306"
     depends_on:
-      - mysql-master
+      - mariadb-master
     volumes:
-      - ./replica1:/docker-entrypoint-initdb.d
-    command:
+      - ./slave:/docker-entrypoint-initdb.d
+      - ./mariadb-slave-1-data:/var/lib/mysql
+    command: >
       --server-id=2
-      --gtid-mode=ON
-      --enforce-gtid-consistency=ON
-      --relay-log=relay-bin
+      --relay-log=relay-log
+      --log-bin=mariadb-bin
       --read-only=ON
-      --default-authentication-plugin=mysql_native_password
-      --log-slave-updates=ON
+      --gtid-domain-id=1
+      --skip-bind-address
+      --skip-name-resolve
 
-  mysql-replica2:
-    container_name: mysql-replica2
-    image: mysql:8.0
-    restart: always
+  mariadb-state-ch-master:
+    image: mariadb:10.6
+    container_name: mariadb-state-ch-master
     environment:
       MYSQL_ROOT_PASSWORD: root
-    depends_on:
-      - mysql-master
+    ports:
+      - "3321:3306"
     volumes:
-      - ./replica2:/docker-entrypoint-initdb.d
-    command:
+      - ./master:/docker-entrypoint-initdb.d
+      - ./mariadb-state-ch-master-data:/var/lib/mysql
+    command: >
       --server-id=3
-      --gtid-mode=ON
-      --enforce-gtid-consistency=ON
-      --relay-log=relay-bin
-      --read-only=ON
-      --default-authentication-plugin=mysql_native_password
+      --log-bin=mariadb-bin
+      --binlog-format=row
+      --gtid-domain-id=1
       --log-slave-updates=ON
+      --skip-bind-address
+      --skip-name-resolve
+
+  mariadb-state-ch-slave-1:
+      image: mariadb:10.6
+      container_name: mariadb-state-ch-slave-1
+      environment:
+        MYSQL_ROOT_PASSWORD: root
+      ports:
+        - "3322:3306"
+      depends_on:
+        - mariadb-state-ch-master
+      volumes:
+        - ./slave:/docker-entrypoint-initdb.d
+        - ./mariadb-state-ch-slave-1-data:/var/lib/mysql
+      command: >
+        --server-id=4
+        --relay-log=relay-log
+        --log-bin=mariadb-bin
+        --read-only=ON
+        --gtid-domain-id=1
+        --skip-bind-address
+        --skip-name-resolve
   
 
